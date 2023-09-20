@@ -6,38 +6,42 @@ from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 
 class ArucoIOUTracker:
-    
-    # determine if 1st run
-    # select a random box to track
-    # then save as self.current_box=np.array[]
-    # if not first run
-    # calculate overlap and select best box
-    # update current box
 
+    def __init__(self):
+        self.current = np.array([])
+        self.pub = pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
+        self.sub = rospy.Subscriber("/multipe_aruco", Float32MultiArray, self.subscriber_callback)
     
-    def subscriber_callback(data):
-        # Check if the data length is a multiple of 12
-        if len(data.data) % 12 == 0:
-            n = len(data.data) // 12  # Calculate the value of N
-            rospy.loginfo("Received a 1x%d Float32MultiArray:", n)
-        
-            # Extract and process the data in groups of 12
-            for i in range(n):
-                start_idx = i * 12
-                end_idx = (i + 1) * 12
-                subarray = data.data[start_idx:end_idx]
-                rospy.loginfo("Subarray %d: %s", i + 1, subarray)
+    def subscriber_callback(self, msg):
+
+        # Initialize a flag
+        first_run = True
+        # Check if it's the first run
+        if first_run:
+            print("This is the first run of the code.")
+            # select a random box to track
+            # then save as self.current_box=np.array[]
+            # Set the flag to False so it won't be the first run next time
+            first_run = False
         else:
-            rospy.logwarn("Received data does not have a valid length (not a multiple of 12). Ignoring.")
+            print("This is not the first run of the code.")
+            # calculate overlap and select best box
+            # update current box
+            # publish best box
+
+           
+            
+
 
     def main():
-        rospy.init_node("float32_multiarray_subscriber")
-    
+        rospy.init_node("ArucoIOUTracker")
+        ArucoIOUTracker()
+
         # Subscribe to the topic publishing the Float32MultiArray
-        rospy.Subscriber("/multipe_aruco", Float32MultiArray, subscriber_callback)
+        
         
         # Publish to a topic
-        pub = rospy.Publisher("output_topic", String, queue_size=10)
+        
         message= 
         pub.publish(message)
 
