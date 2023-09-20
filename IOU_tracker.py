@@ -29,23 +29,7 @@ class ArucoIOUTracker:
             # update current box
             # publish best box
 
-           
-            
-
-
-    def main():
-        rospy.init_node("ArucoIOUTracker")
-        ArucoIOUTracker()
-
-        # Subscribe to the topic publishing the Float32MultiArray
-        
-        
-        # Publish to a topic
-        
-        message= 
-        pub.publish(message)
-
-        rospy.spin()  # Keep the node alive
-
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    rospy.init_node("ArucoIOUTracker")
+    ArucoIOUTracker()
+    rospy.spin()  # Keep the node alive
