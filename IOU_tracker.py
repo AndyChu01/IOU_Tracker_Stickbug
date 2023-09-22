@@ -40,14 +40,13 @@ class ArucoIOUTracker:
                 if IOU > best_IOU:
                     best_IOU = IOU
                     best_box = box
-            if best_box:
-                # Draw the best box on the image
-                self.draw_box(self.image, best_box)
-                # publish bestbox
-                self.pub.publish(Float32MultiArray(data=best_box))
-                # Update the OpenCV window
-                cv2.imshow(self.window_name, self.image)
-                cv2.waitKey(1)  # Update the OpenCV window
+            # Draw the best box on the image
+            self.draw_box(self.image, best_box)
+            # publish bestbox
+            self.pub.publish(Float32MultiArray(data=best_box))
+            # Update the OpenCV window
+            cv2.imshow(self.window_name, self.image)
+            cv2.waitKey(1)  # Update the OpenCV window
             # update current box
             self.current_box = best_box
 
@@ -65,9 +64,9 @@ class ArucoIOUTracker:
     def calculate_iou(box1, box2):
         # Box format: [x1, y1, x2, y2] top-left and bottom-right corners
         # Extract the coordinates of the top-left and bottom-right corners for each box
-        x1_tl, y1_tl, x2_tl, y2_tl = box1
-        x1_br, y1_br, x2_br, y2_br = box2
- 
+        # need to fix naming convention
+        x1_tl, y1_tl, x1_br, y1_br = box1[[0 , 1 , 3 , 4]]
+        x2_tl, y2_tl, x2_br, y2_br = box2[[0 , 1 , 3 , 4]]
         # Calculate the intersection area
         x1_intersection = max(x1_tl, x1_br)
         y1_intersection = max(y1_tl, y1_br)
@@ -80,8 +79,8 @@ class ArucoIOUTracker:
             intersection_area = 0.0
 
         # Calculate the areas of both boxes
-        area_box1 = (x2_tl - x1_tl) * (y2_tl - y1_tl)
-        area_box2 = (x2_br - x1_br) * (y2_br - y1_br)
+        area_box1 = (x1_br - x1_tl) * (y1_br - y1_tl)
+        area_box2 = (x2_br - x2_tl) * (y2_br - y2_tl)
 
         # Calculate the IoU
         iou = intersection_area / float(area_box1 + area_box2 - intersection_area)
