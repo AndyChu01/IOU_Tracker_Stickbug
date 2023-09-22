@@ -65,13 +65,13 @@ class ArucoIOUTracker:
         # Box format: [x1, y1, x2, y2] top-left and bottom-right corners
         # Extract the coordinates of the top-left and bottom-right corners for each box
         # need to fix naming convention
-        x1_tl, y1_tl, x1_br, y1_br = box1[[0 , 1 , 3 , 4]]
-        x2_tl, y2_tl, x2_br, y2_br = box2[[0 , 1 , 3 , 4]]
+        x1_tl, y1_tl, x1_br, y1_br = box1[0], box1[1], box1[2], box1[3]
+        x2_tl, y2_tl, x2_br, y2_br = box2[0], box2[1], box2[2], box2[3]
         # Calculate the intersection area
-        x1_intersection = max(x1_tl, x1_br)
-        y1_intersection = max(y1_tl, y1_br)
-        x2_intersection = min(x2_tl, x2_br)
-        y2_intersection = min(y2_tl, y2_br)
+        x1_intersection = max(x1_tl, x2_tl)
+        y1_intersection = max(y1_tl, y2_tl)
+        x2_intersection = min(x1_br, x2_br)
+        y2_intersection = min(y1_br, y2_br)
 
         if x1_intersection < x2_intersection and y1_intersection < y2_intersection:
             intersection_area = (x2_intersection - x1_intersection) * (y2_intersection - y1_intersection)
