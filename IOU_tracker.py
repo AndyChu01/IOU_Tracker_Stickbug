@@ -7,29 +7,42 @@ from std_msgs.msg import Float32MultiArray
 class ArucoIOUTracker:
 
     def __init__(self):
-        self.current = np.array([])
+        self.current_box = np.array([])
         self.pub = pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
         self.sub = rospy.Subscriber("/multipe_aruco", Float32MultiArray, self.subscriber_callback)
     
     def subscriber_callback(self, msg):
-
         # Initialize a flag
         first_run = True
         # Check if it's the first run
         if first_run:
             print("This is the first run of the code.")
-            # select a random box to track
-            # then save as self.current_box=np.array[]
+            if len(msg.data) >= 12:
+            # select a random box to track then save as self.current_box=np.array[]
+                self.current_box = np.array(msg.data[:12])
+                print("self.current_box:", self.current_box)
             # Set the flag to False so it won't be the first run next time
             first_run = False
         else:
             print("This is not the first run of the code.")
             # calculate overlap and select best box
-            # publish bestbox
+            best_IOU = 0
+            best_box = []
+            # Iterates through all detected boxes from the msg
+            for i in range(0, len(msg.data), 12):
+                box = np.array(msg.data[i:i+12])
+                IOU = self.calculate_iou(self.current_box, box)
+                if IOU > best_IOU:
+                    best_IOU = IOU
+                    best_box = box
+            if best_box:
+                # publish bestbox
+                self.pub.publish(Float32MultiArray(data=best_box))
             # update current box
-    def calculate_iou(box1, box2):
-        # Box format: [x1, y1, x2, y2]
+            self.current_box = best_box
 
+    def calculate_iou(box1, box2):
+        # Box format: [x1, y1, x2, y2] top-left and bottom-right corners
         # Extract the coordinates of the top-left and bottom-right corners for each box
         x1_tl, y1_tl, x2_tl, y2_tl = box1
         x1_br, y1_br, x2_br, y2_br = box2
