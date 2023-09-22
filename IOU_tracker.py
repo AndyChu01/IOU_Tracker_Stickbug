@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import cv2
 import numpy as np
 import rospy
 from std_msgs.msg import Float32MultiArray
@@ -10,6 +10,11 @@ class ArucoIOUTracker:
         self.current_box = np.array([])
         self.pub = pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
         self.sub = rospy.Subscriber("/multipe_aruco", Float32MultiArray, self.subscriber_callback)
+        # Initialize the OpenCV window
+        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
+        self.window_name = "Aruco Tracking"
+        self.image = None
+
     
     def subscriber_callback(self, msg):
         # Initialize a flag
@@ -36,10 +41,26 @@ class ArucoIOUTracker:
                     best_IOU = IOU
                     best_box = box
             if best_box:
+                # Draw the best box on the image
+                self.draw_box(self.image, best_box)
                 # publish bestbox
                 self.pub.publish(Float32MultiArray(data=best_box))
+                # Update the OpenCV window
+                cv2.imshow(self.window_name, self.image)
+                cv2.waitKey(1)  # Update the OpenCV window
             # update current box
             self.current_box = best_box
+
+    def draw_box(self, image, box):
+        # Extract the box coordinates
+        x1, y1, x2, y2 = map(int, box)
+
+        # Draw the bounding box on the image
+        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+    
+    def __del__(self):
+        # Destroy the OpenCV window when the node is shut down
+        cv2.destroyWindow(self.window_name)
 
     def calculate_iou(box1, box2):
         # Box format: [x1, y1, x2, y2] top-left and bottom-right corners
