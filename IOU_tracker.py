@@ -9,25 +9,23 @@ class ArucoIOUTracker:
     def __init__(self):
         self.current_box = np.array([])
         self.pub = pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
-        self.sub = rospy.Subscriber("/multipe_aruco", Float32MultiArray, self.subscriber_callback)
+        self.sub = rospy.Subscriber("/aruco_markers", Float32MultiArray, self.subscriber_callback)
         # Initialize the OpenCV window
         cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
         self.window_name = "Aruco Tracking"
         self.image = None
+        self.first_run = True
 
-    
     def subscriber_callback(self, msg):
-        # Initialize a flag
-        first_run = True
         # Check if it's the first run
-        if first_run:
+        if self.first_run:
             print("This is the first run of the code.")
             if len(msg.data) >= 12:
             # select a random box to track then save as self.current_box=np.array[]
                 self.current_box = np.array(msg.data[:12])
                 print("self.current_box:", self.current_box)
             # Set the flag to False so it won't be the first run next time
-            first_run = False
+            self.first_run = False
         else:
             print("This is not the first run of the code.")
             # calculate overlap and select best box
@@ -61,17 +59,17 @@ class ArucoIOUTracker:
         # Destroy the OpenCV window when the node is shut down
         cv2.destroyWindow(self.window_name)
 
-    def calculate_iou(box1, box2):
+    def calculate_iou(self, box1, box2):
         # Box format: [x1, y1, x2, y2] top-left and bottom-right corners
         # Extract the coordinates of the top-left and bottom-right corners for each box
         # need to fix naming convention
-        x1_tl, y1_tl, x1_br, y1_br = box1[0], box1[1], box1[2], box1[3]
-        x2_tl, y2_tl, x2_br, y2_br = box2[0], box2[1], box2[2], box2[3]
+        x1_tl, y1_tl, x1_br, y1_br = box1[[0 , 1 , 3 , 4]]
+        x2_tl, y2_tl, x2_br, y2_br = box2[[0 , 1 , 3 , 4]]
         # Calculate the intersection area
-        x1_intersection = max(x1_tl, x2_tl)
-        y1_intersection = max(y1_tl, y2_tl)
-        x2_intersection = min(x1_br, x2_br)
-        y2_intersection = min(y1_br, y2_br)
+        x1_intersection = max(x1_tl, x1_tl)
+        y1_intersection = max(y1_tl, y1_tl)
+        x2_intersection = min(x2_tl, x2_br)
+        y2_intersection = min(y2_tl, y2_br)
 
         if x1_intersection < x2_intersection and y1_intersection < y2_intersection:
             intersection_area = (x2_intersection - x1_intersection) * (y2_intersection - y1_intersection)
