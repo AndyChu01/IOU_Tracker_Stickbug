@@ -11,12 +11,15 @@ class ArucoIOUTracker:
         self.pub = pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
         self.sub = rospy.Subscriber("/aruco_markers", Float32MultiArray, self.subscriber_callback)
         # Initialize the OpenCV window
-        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
         self.window_name = "Aruco Tracking"
-        self.image = None
+        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
+        self.capture = cv2.VideoCapture(0)  # 0 for default camera, adjust as needed
         self.first_run = True
 
     def subscriber_callback(self, msg):
+        ret, frame = self.capture.read()  # Capture a frame from the camera
+        if not ret:
+            return
         # Check if it's the first run
         if self.first_run:
             print("This is the first run of the code.")
@@ -38,12 +41,15 @@ class ArucoIOUTracker:
                 if IOU > best_IOU:
                     best_IOU = IOU
                     best_box = box
+
+            # Publish the best box and IOU score
+            best_msg = Float32MultiArray()
+            best_msg.data = list(best_box) + [best_IOU]  # Append the IOU score to the best box data
+            self.pub.publish(best_msg)
             # Draw the best box on the image
-            self.draw_box(self.image, best_box)
-            # publish bestbox
-            self.pub.publish(Float32MultiArray(data=best_box))
+            self.draw_box(frame, best_box)
             # Update the OpenCV window
-            cv2.imshow(self.window_name, self.image)
+            cv2.imshow(self.window_name, frame)
             cv2.waitKey(1)  # Update the OpenCV window
             # update current box
             self.current_box = best_box
