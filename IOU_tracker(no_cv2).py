@@ -40,3 +40,33 @@ class ArucoIOUTracker:
         self.pub.publish(best_msg)
         # Update current box
         self.current_box = best_box
+            
+    def calculate_iou(self, box1, box2):
+        # Note the edge case of overlapping corners were ignored
+        # Box format: [xtl, ytl, xbr, ybr] top-left and bottom-right corners
+        # Extract the coordinates of the top-left and bottom-right corners for each box
+        # box 1
+        xtl1=box1(0)
+        ytl1=box1(1)
+        xbr1=box1(3)
+        ybr1=box1(4)
+        # box 2
+        xtl2=box2(0)
+        ytl2=box2(1)
+        xbr2=box2(3)
+        ybr2=box2(4)
+        # Calculate the area of the boxes
+        area1 = (xbr1-xtl1)*(ybr1-ytl1)
+        area2 = (xbr2-xtl2)*(ybr2-ytl2)
+        # Calculate the intersections
+        intx = max(0,min(xbr1,xbr2)-max(xtl1,xtl2))
+        inty = max(0,min(ybr1,ybr2)-max(ytl1,ytl2))
+        intArea = intx*inty
+        # Calculate IOU Score
+        iou = intArea/ float(area1 + area2 - intArea)
+        return iou
+
+if __name__ == "__main__":
+    rospy.init_node("ArucoIOUTracker")
+    ArucoIOUTracker()
+    rospy.spin()  # Keep the node alive
