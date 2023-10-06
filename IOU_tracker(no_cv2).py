@@ -1,6 +1,5 @@
 import numpy as np
 import rospy
-import time
 from std_msgs.msg import Float32MultiArray
 
 class ArucoIOUTracker:
