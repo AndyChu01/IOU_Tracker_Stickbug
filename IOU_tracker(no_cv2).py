@@ -31,6 +31,7 @@ class ArucoIOUTracker:
         for i in range(0, len(msg.data), 12):
             box = np.array(msg.data[i:i+12])
             IOU = self.calculate_iou(self.current_box, box)
+            print("IOU Score is:",IOU)
             if IOU > best_IOU:
                 best_IOU = IOU
                 best_box = box
