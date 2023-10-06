@@ -5,23 +5,30 @@ from std_msgs.msg import Float32MultiArray
 class ArucoIOUTracker:
     def __init__(self):
         self.current_box = np.array([])
-        self.pub = pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
+        self.pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
         self.sub = rospy.Subscriber("/aruco_markers", Float32MultiArray, self.subscriber_callback)
-        self.first_run = True
+        self.timeout = 1.0 # timeout duration for edge case
+        self.last_update_time = rospy.get_time()
     
     def subscriber_callback(self, msg):
+        current_time = rospy.get_time()
         # Check if there are ArUco markers
-        if len(msg.data) >= 12:
+        if len(msg.data) >= 12 and current_time - self.last_update_time <= self.timeout:
             # Select a random box to track then save as self.current_box=np.array[]
             self.current_box = np.array(msg.data[:12])
             print("self.current_box:", self.current_box)
             # Set the flag to False so it won't be the first run next time
-            self.first_run = False
+            # self.first_run = False
         else:
-            # ArUco markers are not detected yet, continue waiting
-            print("No ArUco markers detected yet. Waiting...")
-            return  # Exit the callback function without executing the else block
-
+            if current_time - self.last_update_time > self.timeout:
+                # Timeout exceeded, no new ArUco markers detected
+                print("Timeout exceeded. No new ArUco markers detected. Keeping the last known box.")
+            else:
+                # ArUco markers are not detected yet, continue waiting
+                print("No ArUco markers detected yet. Waiting...")
+                return  # Exit the callback function without executing the else block
+        # Update the last update time
+        self.last_update_time = current_time
         # At this point, ArUco markers have been detected
         # Calculate overlap and select best box
         best_IOU = 0
@@ -46,23 +53,23 @@ class ArucoIOUTracker:
         # Box format: [xtl, ytl, xbr, ybr] top-left and bottom-right corners
         # Extract the coordinates of the top-left and bottom-right corners for each box
         # box 1
-        xtl1=box1(0)
-        ytl1=box1(1)
-        xbr1=box1(3)
-        ybr1=box1(4)
+        xtl1=box1[0]
+        ytl1=box1[1]
+        xbr1=box1[3]
+        ybr1=box1[4]
         # box 2
-        xtl2=box2(0)
-        ytl2=box2(1)
-        xbr2=box2(3)
-        ybr2=box2(4)
-        # Calculate the area of the boxes
+        xtl2=box2[0]
+        ytl2=box2[1]
+        xbr2=box2[3]
+        ybr2=box2[4]
+        # calculate the area of the boxes
         area1 = (xbr1-xtl1)*(ybr1-ytl1)
         area2 = (xbr2-xtl2)*(ybr2-ytl2)
-        # Calculate the intersections
+        # calculate the intersections
         intx = max(0,min(xbr1,xbr2)-max(xtl1,xtl2))
         inty = max(0,min(ybr1,ybr2)-max(ytl1,ytl2))
         intArea = intx*inty
-        # Calculate IOU Score
+        # calculate IOU Score
         iou = intArea/ float(area1 + area2 - intArea)
         return iou
 
