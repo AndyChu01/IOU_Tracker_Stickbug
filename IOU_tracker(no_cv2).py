@@ -14,20 +14,21 @@ class ArucoIOUTracker:
     def subscriber_callback(self, msg):
         current_time = rospy.get_time()
         # Check if there are ArUco markers
-        if len(msg.data) >= 12 and current_time - self.last_update_time <= self.timeout:
+        # if len(msg.data) >= 12 and current_time - self.last_update_time <= self.timeout:
+        if len(msg.data) >= 12 and self.first_run == True:
             # Select a random box to track then save as self.current_box=np.array[]
             self.current_box = np.array(msg.data[:12])
             print("self.current_box:", self.current_box)
             # Set the flag to False so it won't be the first run next time
             self.first_run = False
-        else:
-            if current_time - self.last_update_time > self.timeout:
-                # Timeout exceeded, no new ArUco markers detected
-                print("Timeout exceeded. No new ArUco markers detected. Keeping the last known box.")
-            else:
-                # ArUco markers are not detected yet, continue waiting
-                print("No ArUco markers detected yet. Waiting...")
-                return  # Exit the callback function without executing the else block
+        # else:
+        #     if current_time - self.last_update_time > self.timeout:
+        #         # Timeout exceeded, no new ArUco markers detected
+        #         print("Timeout exceeded. No new ArUco markers detected. Keeping the last known box.")
+        #     else:
+        #         # ArUco markers are not detected yet, continue waiting
+        #         print("No ArUco markers detected yet. Waiting...")
+        #         return  # Exit the callback function without executing the else block
         # Update the last update time
         self.last_update_time = current_time
         # At this point, ArUco markers have been detected
