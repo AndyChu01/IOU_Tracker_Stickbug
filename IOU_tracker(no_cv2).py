@@ -56,13 +56,13 @@ class ArucoIOUTracker:
         # box 1
         xtl1=box1[0]
         ytl1=box1[1]
-        xbr1=box1[3]
-        ybr1=box1[4]
+        xbr1=box1[6]
+        ybr1=box1[7]
         # box 2
         xtl2=box2[0]
         ytl2=box2[1]
-        xbr2=box2[3]
-        ybr2=box2[4]
+        xbr2=box2[6]
+        ybr2=box2[7]
         # calculate the area of the boxes
         area1 = max(0,xbr1-xtl1)*max(0,ybr1-ytl1)
         area2 = max(0,xbr2-xtl2)*max(0,ybr2-ytl2)
@@ -72,6 +72,9 @@ class ArucoIOUTracker:
         intx = max(0,min(xbr1,xbr2)-max(xtl1,xtl2))
         inty = max(0,min(ybr1,ybr2)-max(ytl1,ytl2))
         intArea = intx*inty
+        print("min(xbr1,xbr2):",min(xbr1,xbr2))
+        print("max(xtl1,xtl2):",max(xtl1,xtl2))
+        print("min(xbr1,xbr2)-max(xtl1,xtl2):",min(xbr1,xbr2)-max(xtl1,xtl2))
         print("area of intersection:",intArea)
         # calculate IOU Score
         try:
