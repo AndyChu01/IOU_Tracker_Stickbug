@@ -9,6 +9,7 @@ class ArucoIOUTracker:
         self.sub = rospy.Subscriber("/aruco_markers", Float32MultiArray, self.subscriber_callback)
         self.timeout = 1.0 # timeout duration for edge case
         self.last_update_time = rospy.get_time()
+        self.first_run = True
     
     def subscriber_callback(self, msg):
         current_time = rospy.get_time()
@@ -18,7 +19,7 @@ class ArucoIOUTracker:
             self.current_box = np.array(msg.data[:12])
             print("self.current_box:", self.current_box)
             # Set the flag to False so it won't be the first run next time
-            # self.first_run = False
+            self.first_run = False
         else:
             if current_time - self.last_update_time > self.timeout:
                 # Timeout exceeded, no new ArUco markers detected
@@ -63,14 +64,17 @@ class ArucoIOUTracker:
         xbr2=box2[3]
         ybr2=box2[4]
         # calculate the area of the boxes
-        area1 = (xbr1-xtl1)*(ybr1-ytl1)
-        area2 = (xbr2-xtl2)*(ybr2-ytl2)
+        area1 = max(0,xbr1-xtl1)*max(0,ybr1-ytl1)
+        area2 = max(0,xbr2-xtl2)*max(0,ybr2-ytl2)
         # calculate the intersections
         intx = max(0,min(xbr1,xbr2)-max(xtl1,xtl2))
         inty = max(0,min(ybr1,ybr2)-max(ytl1,ytl2))
         intArea = intx*inty
         # calculate IOU Score
-        iou = intArea/ float(area1 + area2 - intArea)
+        try:
+            iou = intArea/ float(area1 + area2 - intArea)
+        except ZeroDivisionError:
+            iou = 0.0
         return iou
 
 if __name__ == "__main__":
