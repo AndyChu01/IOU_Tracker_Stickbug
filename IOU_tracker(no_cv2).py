@@ -66,10 +66,13 @@ class ArucoIOUTracker:
         # calculate the area of the boxes
         area1 = max(0,xbr1-xtl1)*max(0,ybr1-ytl1)
         area2 = max(0,xbr2-xtl2)*max(0,ybr2-ytl2)
+        print("area of box 1:",area1)
+        print("area of box 2:",area2)
         # calculate the intersections
         intx = max(0,min(xbr1,xbr2)-max(xtl1,xtl2))
         inty = max(0,min(ybr1,ybr2)-max(ytl1,ytl2))
         intArea = intx*inty
+        print("area of intersection:",intArea)
         # calculate IOU Score
         try:
             iou = intArea/ float(area1 + area2 - intArea)
