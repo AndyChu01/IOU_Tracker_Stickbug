@@ -5,36 +5,26 @@ from std_msgs.msg import Float32MultiArray
 class ArucoIOUTracker:
     def __init__(self):
         self.current_box = np.array([])
+        self.current_marker_id=0
         self.pub = rospy.Publisher("bestbox", Float32MultiArray, queue_size=12)
         self.sub = rospy.Subscriber("/aruco_markers", Float32MultiArray, self.subscriber_callback)
-        self.timeout = 1.0 # timeout duration for edge case
-        self.last_update_time = rospy.get_time()
         self.first_run = True
     
     def subscriber_callback(self, msg):
         current_time = rospy.get_time()
         # Check if there are ArUco markers
-        # if len(msg.data) >= 13 and current_time - self.last_update_time <= self.timeout:
         if len(msg.data) >= 13 and self.first_run == True:
             # Select a random box to track then save as self.current_box=np.array[]
             self.current_box = np.array(msg.data[:13])
+            self.current_marker_id = int(msg.data[12])
             print("self.current_box:", self.current_box)
+            print("Marker ID:", self.current_marker_id)
             # Set the flag to False so it won't be the first run next time
             self.first_run = False
-        # else:
-        #     if current_time - self.last_update_time > self.timeout:
-        #         # Timeout exceeded, no new ArUco markers detected
-        #         print("Timeout exceeded. No new ArUco markers detected. Keeping the last known box.")
-        #     else:
-        #         # ArUco markers are not detected yet, continue waiting
-        #         print("No ArUco markers detected yet. Waiting...")
-        #         return  # Exit the callback function without executing the else block
-        # Update the last update time
-        self.last_update_time = current_time
-        # At this point, ArUco markers have been detected
-        # Calculate overlap and select best box
+
         best_IOU = 0
         best_box = []
+        best_marker_id = 0
         # Iterates through all detected boxes from the msg
         for i in range(0, len(msg.data), 13):
             box = np.array(msg.data[i:i+13])
@@ -43,12 +33,14 @@ class ArucoIOUTracker:
             if IOU > best_IOU:
                 best_IOU = IOU
                 best_box = box
+                best_marker_id = int(msg.data[i+12])
         # Publish the best box and IOU score
         best_msg = Float32MultiArray()
-        best_msg.data = list(best_box) + [best_IOU]  # Append the IOU score to the best box data
+        best_msg.data = list(best_box) + [best_IOU,best_marker_id]  # Append the IOU score to the best box data
         self.pub.publish(best_msg)
         # Update current box
         self.current_box = best_box
+        self.current_marker_id = best_marker_id
             
     def calculate_iou(self, box1, box2):
         # Note the edge case of overlapping corners were ignored
