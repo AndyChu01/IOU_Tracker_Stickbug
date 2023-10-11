@@ -14,10 +14,10 @@ class ArucoIOUTracker:
     def subscriber_callback(self, msg):
         current_time = rospy.get_time()
         # Check if there are ArUco markers
-        # if len(msg.data) >= 12 and current_time - self.last_update_time <= self.timeout:
-        if len(msg.data) >= 12 and self.first_run == True:
+        # if len(msg.data) >= 13 and current_time - self.last_update_time <= self.timeout:
+        if len(msg.data) >= 13 and self.first_run == True:
             # Select a random box to track then save as self.current_box=np.array[]
-            self.current_box = np.array(msg.data[:12])
+            self.current_box = np.array(msg.data[:13])
             print("self.current_box:", self.current_box)
             # Set the flag to False so it won't be the first run next time
             self.first_run = False
@@ -36,8 +36,8 @@ class ArucoIOUTracker:
         best_IOU = 0
         best_box = []
         # Iterates through all detected boxes from the msg
-        for i in range(0, len(msg.data), 12):
-            box = np.array(msg.data[i:i+12])
+        for i in range(0, len(msg.data), 13):
+            box = np.array(msg.data[i:i+13])
             IOU = self.calculate_iou(self.current_box, box)
             print("IOU Score is:",IOU)
             if IOU > best_IOU:

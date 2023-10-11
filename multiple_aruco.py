@@ -71,7 +71,7 @@ class ArucoDetectionNode:
                         marker_corners[0][0], marker_corners[0][1], average_depth,
                         marker_corners[1][0], marker_corners[1][1], average_depth,
                         marker_corners[2][0], marker_corners[2][1], average_depth,
-                        marker_corners[3][0], marker_corners[3][1], average_depth
+                        marker_corners[3][0], marker_corners[3][1], average_depth, marker_id
                     ])
                     # Draw ArUco marker on the image
                     cv2.aruco.drawDetectedMarkers(cv_image, corners, ids)
