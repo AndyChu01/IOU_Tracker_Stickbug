@@ -1,8 +1,8 @@
 # IOU_Tracker_Stickbug
 WVU Stickbug Visual Servoing
 
+NOTE:
 
-# NOTE
 roslaunch realsense2_camera rs_camera.launch
 rviz add camera image raw
 cd ws
