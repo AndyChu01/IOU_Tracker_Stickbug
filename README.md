@@ -2,7 +2,7 @@
 WVU Stickbug Visual Servoing
 Aruco code is for testing multiple Aruco and can be ignored
 
-NOTE: To run the IoU and tracker
+NOTE: To run the Intersection over Union(IoU) and bramble flower tracker:
 1. Put the best_bramble.pt, flower_tracker_class.py, and IOU_tracker.py in the same folder
 2. roslaunch realsense2_camera rs_camera.launch
 3. rviz rviz add camera image raw (Optional)
